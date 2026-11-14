@@ -1,0 +1,6 @@
+node_modules/
+.env
+dist/
+
+# Seguimiento personal del trabajo, no forma parte de la entrega
+backlog.html
