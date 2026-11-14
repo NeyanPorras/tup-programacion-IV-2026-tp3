@@ -1,5 +1,8 @@
 import express from 'express'
 import cors from 'cors'
+import { conectarDB } from './db.js'
+
+conectarDB()
 
 const app = express()
 const port = process.env.PORT || 3000
