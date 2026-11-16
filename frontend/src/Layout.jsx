@@ -1,12 +1,15 @@
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { useAuth } from './Auth'
 
 export function Layout() {
   const { estaAutenticado, nombre, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
+  // Se pasa la clave de la pagina actual: si es protegida, AuthLayout
+  // reconoce la salida voluntaria y manda al inicio en lugar del login
   const salir = () => {
-    logout()
+    logout(location.key)
     navigate('/')
   }
 

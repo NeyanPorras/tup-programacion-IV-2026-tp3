@@ -36,6 +36,10 @@ async function pedir(url, opciones = {}) {
 
 export function AuthProvider({ children }) {
   const [sesion, setSesion] = useState(leerSesionGuardada)
+  // Clave (location.key) de la pagina desde la que el usuario toco "Salir".
+  // AuthLayout la compara para mandarlo al inicio solo desde esa pagina;
+  // cualquier otra pagina protegida, o un token rechazado, va al login.
+  const [claveSalida, setClaveSalida] = useState(null)
 
   const guardarSesion = useCallback((nuevaSesion) => {
     setSesion(nuevaSesion)
@@ -62,6 +66,7 @@ export function AuthProvider({ children }) {
       }
 
       guardarSesion({ token: datos.token, nombre: datos.nombre })
+      setClaveSalida(null)
       return { ok: true, datos }
     },
     [guardarSesion]
@@ -74,7 +79,14 @@ export function AuthProvider({ children }) {
     })
   }, [])
 
-  const logout = useCallback(() => guardarSesion(null), [guardarSesion])
+  // clave: la location.key de la pagina actual cuando el usuario toca "Salir"
+  const logout = useCallback(
+    (clave = null) => {
+      setClaveSalida(clave)
+      guardarSesion(null)
+    },
+    [guardarSesion]
+  )
 
   // fetch con el token. Si el backend responde 401 (token vencido o invalido)
   // se cierra la sesion, y AuthLayout manda al usuario al login.
@@ -99,6 +111,7 @@ export function AuthProvider({ children }) {
       value={{
         nombre: sesion?.nombre ?? null,
         estaAutenticado: Boolean(sesion),
+        claveSalida,
         login,
         registrar,
         logout,
