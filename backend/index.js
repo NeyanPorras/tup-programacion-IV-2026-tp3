@@ -1,9 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import { conectarDB } from './db.js'
-import authRouter from './auth.js'
+import authRouter, { authConfig } from './auth.js'
 
 conectarDB()
+authConfig()
 
 const app = express()
 const port = process.env.PORT || 3000

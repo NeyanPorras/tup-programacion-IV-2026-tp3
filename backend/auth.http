@@ -141,9 +141,8 @@ Content-Type: application/json
   "password": "otraClave99"
 }
 
-# ------------------------------- LOGIN -------------------------------
-
 ### Iniciar sesion con datos correctos (200)
+# ------------------------------- LOGIN -------------------------------
 # @name login
 POST {{url}}/auth/login
 Content-Type: application/json
@@ -200,3 +199,25 @@ Content-Type: application/json
 ### Iniciar sesion sin body (400)
 POST {{url}}/auth/login
 Content-Type: application/json
+
+### Ver el perfil con el token del login (200)
+# ----------------------------- RUTA PROTEGIDA -----------------------------
+# Usan el token del request "login" de arriba: ejecutarlo antes.
+GET {{url}}/auth/perfil
+Authorization: Bearer {{login.response.body.token}}
+
+### Ver el perfil sin token (401)
+GET {{url}}/auth/perfil
+
+### Ver el perfil con un token inventado (401)
+GET {{url}}/auth/perfil
+Authorization: Bearer esto.no.es-un-token
+
+### Ver el perfil con un token adulterado (401)
+# Payload cambiado a mano: dice userId 2, pero la firma es la del token original
+GET {{url}}/auth/perfil
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsIm5vbWJyZSI6IkFuYSBHYXJjw61hIiwiaWF0IjoxNzk0Nzk3MDcxLCJleHAiOjE3OTQ4MTE0NzF9.firma-que-no-coincide
+
+### Ver el perfil sin la palabra Bearer (401)
+GET {{url}}/auth/perfil
+Authorization: {{login.response.body.token}}

@@ -2,10 +2,29 @@ import express from 'express'
 import { body } from 'express-validator'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import passport from 'passport'
+import { Strategy, ExtractJwt } from 'passport-jwt'
 import { db } from './db.js'
-import { verificarValidaciones } from './validaciones.js'
+import {
+  validarAutenticacion,
+  verificarValidaciones
+} from './validaciones.js'
 
 const router = express.Router()
+
+export function authConfig() {
+  const opciones = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: process.env.JWT_SECRET
+  }
+
+  passport.use(
+    new Strategy(opciones, (payload, next) => {
+      // Si llega aca, la firma es valida y el token no vencio
+      next(null, payload)
+    })
+  )
+}
 
 const reglasDeRegistro = [
   body('nombre')
@@ -134,6 +153,20 @@ router.post('/login', reglasDeLogin, verificarValidaciones, async (req, res) => 
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '4h' })
 
   res.json({ token, nombre: usuario.nombre })
+})
+
+// Devuelve los datos del usuario del token. Sirve para comprobar la sesion.
+router.get('/perfil', validarAutenticacion, async (req, res) => {
+  const [usuarios] = await db.execute(
+    'SELECT id, nombre, email FROM usuarios WHERE id = ?',
+    [req.user.userId]
+  )
+
+  if (usuarios.length === 0) {
+    return res.status(404).json({ mensaje: 'Usuario no encontrado' })
+  }
+
+  res.json(usuarios[0])
 })
 
 export default router
