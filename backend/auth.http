@@ -1,0 +1,142 @@
+@url = http://localhost:3000
+
+# Las peticiones dependen del orden: la primera registra el usuario que
+# usan los casos de email repetido. Para repetir la corrida desde cero,
+# volver a crear las tablas con database.sql.
+
+### Registrar un usuario (201)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Ana García",
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Registrar con un email ya usado (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Ana García",
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Registrar con el mismo email en mayusculas y con espacios (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Ana García",
+  "email": "  ANA.GARCIA@MAIL.COM  ",
+  "password": "segura123"
+}
+
+### Registrar sin nombre (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "email": "luis.perez@mail.com",
+  "password": "segura123"
+}
+
+### Registrar con un nombre que contiene numeros (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis P3rez",
+  "email": "luis.perez@mail.com",
+  "password": "segura123"
+}
+
+### Registrar con un nombre de una sola letra (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "L",
+  "email": "luis.perez@mail.com",
+  "password": "segura123"
+}
+
+### Registrar sin email (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "password": "segura123"
+}
+
+### Registrar con un email sin formato valido (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez-arroba-mail.com",
+  "password": "segura123"
+}
+
+### Registrar sin contraseña (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez@mail.com"
+}
+
+### Registrar con una contraseña de menos de 8 caracteres (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez@mail.com",
+  "password": "abc12"
+}
+
+### Registrar con una contraseña sin numeros (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez@mail.com",
+  "password": "solamenteletras"
+}
+
+### Registrar con una contraseña de mas de 72 caracteres (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez@mail.com",
+  "password": "abcdefgh1abcdefgh1abcdefgh1abcdefgh1abcdefgh1abcdefgh1abcdefgh1abcdefgh1a"
+}
+
+### Registrar sin body (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+### Registrar con un JSON mal formado (400)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{ "nombre": "Luis Pérez", }
+
+### Registrar un segundo usuario valido (201)
+POST {{url}}/auth/registro
+Content-Type: application/json
+
+{
+  "nombre": "Luis Pérez",
+  "email": "luis.perez@mail.com",
+  "password": "otraClave99"
+}
