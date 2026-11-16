@@ -4,7 +4,13 @@ import { hoy } from './validacionesForm'
 
 // Selector de conductores cargado desde el backend.
 // Recibe el id elegido (texto) y avisa los cambios con onChange.
-export function ConductoresSelect({ id = 'conductorId', valor, onChange, invalido }) {
+export function ConductoresSelect({
+  id = 'conductorId',
+  valor,
+  onChange,
+  invalido,
+  textoVacio = 'Elegí un conductor'
+}) {
   const { fetchAuth } = useAuth()
   const [conductores, setConductores] = useState([])
 
@@ -29,7 +35,7 @@ export function ConductoresSelect({ id = 'conductorId', valor, onChange, invalid
       onChange={(e) => onChange(e.target.value)}
       aria-invalid={invalido}
     >
-      <option value="">Elegí un conductor</option>
+      <option value="">{textoVacio}</option>
       {conductores.map((conductor) => (
         <option key={conductor.id} value={conductor.id}>
           {conductor.apellido}, {conductor.nombre}

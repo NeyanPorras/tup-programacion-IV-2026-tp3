@@ -14,6 +14,9 @@ import { VehiculoForm } from './VehiculoForm'
 import { Conductores } from './Conductores'
 import { ConductorForm } from './ConductorForm'
 import { ViajeCrear } from './ViajeCrear'
+import { Viajes } from './Viajes'
+import { VehiculoDetalles } from './VehiculoDetalles'
+import { ConductorDetalles } from './ConductorDetalles'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -29,10 +32,13 @@ createRoot(document.getElementById('root')).render(
             <Route element={<AuthLayout />}>
               <Route path="vehiculos" element={<Vehiculos />} />
               <Route path="vehiculos/nuevo" element={<VehiculoForm />} />
+              <Route path="vehiculos/:id" element={<VehiculoDetalles />} />
               <Route path="vehiculos/:id/editar" element={<VehiculoForm />} />
               <Route path="conductores" element={<Conductores />} />
               <Route path="conductores/nuevo" element={<ConductorForm />} />
+              <Route path="conductores/:id" element={<ConductorDetalles />} />
               <Route path="conductores/:id/editar" element={<ConductorForm />} />
+              <Route path="viajes" element={<Viajes />} />
               <Route path="viajes/nuevo" element={<ViajeCrear />} />
             </Route>
 
