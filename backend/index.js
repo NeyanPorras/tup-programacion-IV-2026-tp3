@@ -4,6 +4,7 @@ import { conectarDB } from './db.js'
 import authRouter, { authConfig } from './auth.js'
 import vehiculosRouter from './vehiculos.js'
 import conductoresRouter from './conductores.js'
+import viajesRouter from './viajes.js'
 
 conectarDB()
 authConfig()
@@ -16,6 +17,7 @@ app.use(express.json())
 app.use('/auth', authRouter)
 app.use('/vehiculos', vehiculosRouter)
 app.use('/conductores', conductoresRouter)
+app.use('/viajes', viajesRouter)
 
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`)

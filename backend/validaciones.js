@@ -1,5 +1,6 @@
-import { body, param, validationResult } from 'express-validator'
+import { body, param, query, validationResult } from 'express-validator'
 import passport from 'passport'
+import { db } from './db.js'
 
 // Verifica el token con la estrategia jwt de auth.js y responde 401 en JSON
 export const validarAutenticacion = (req, res, next) => {
@@ -140,4 +141,120 @@ export const validarConductor = [
     .withMessage(
       'La fecha de vencimiento debe ser posterior a la fecha de alta de la licencia'
     )
+]
+
+const FORMATO_FECHA_HORA = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/
+
+// Acepta "2026-10-01T06:00" (lo que manda un input datetime-local) o
+// "2026-10-01 06:00:00", y lo deja siempre como "2026-10-01 06:00:00".
+const normalizarFechaHora = (valor) => {
+  const texto = valor.replace('T', ' ')
+  return texto.length === 16 ? `${texto}:00` : texto
+}
+
+const reglaFechaHora = (campo, nombre) =>
+  body(campo)
+    .isString()
+    .withMessage(`La ${nombre} es obligatoria`)
+    .bail()
+    .trim()
+    .matches(FORMATO_FECHA_HORA)
+    .withMessage(`La ${nombre} debe tener el formato AAAA-MM-DD HH:MM`)
+    .bail()
+    .customSanitizer(normalizarFechaHora)
+    .isISO8601({ strict: true })
+    .withMessage(`La ${nombre} no es una fecha y hora válidas`)
+
+export const validarViaje = [
+  reglaFechaHora('fechaSalida', 'fecha de salida'),
+
+  reglaFechaHora('fechaLlegada', 'fecha de llegada')
+    .bail()
+    .custom((llegada, { req }) => llegada >= req.body.fechaSalida)
+    .withMessage('La fecha de llegada no puede ser anterior a la de salida'),
+
+  body('origen')
+    .isString()
+    .withMessage('El origen es obligatorio')
+    .bail()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('El origen debe tener entre 2 y 100 caracteres'),
+
+  body('destino')
+    .isString()
+    .withMessage('El destino es obligatorio')
+    .bail()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('El destino debe tener entre 2 y 100 caracteres'),
+
+  body('kilometros')
+    .isFloat({ gt: 0, max: 999999.99 })
+    .withMessage('Los kilómetros deben ser un número mayor que 0')
+    .toFloat(),
+
+  body('observaciones')
+    .optional({ values: 'null' })
+    .isString()
+    .withMessage('Las observaciones deben ser texto')
+    .bail()
+    .trim()
+    .isLength({ max: 255 })
+    .withMessage('Las observaciones no pueden superar los 255 caracteres'),
+
+  body('vehiculoId')
+    .isInt({ min: 1 })
+    .withMessage('El vehiculoId debe ser un número entero positivo')
+    .bail()
+    .toInt()
+    .custom(async (vehiculoId) => {
+      const [filas] = await db.execute('SELECT id FROM vehiculos WHERE id = ?', [
+        vehiculoId
+      ])
+      if (filas.length === 0) {
+        throw new Error('El vehículo indicado no existe')
+      }
+    }),
+
+  // Va al final porque compara la licencia con la fecha de salida ya validada
+  body('conductorId')
+    .isInt({ min: 1 })
+    .withMessage('El conductorId debe ser un número entero positivo')
+    .bail()
+    .toInt()
+    .custom(async (conductorId, { req }) => {
+      const [filas] = await db.execute(
+        'SELECT fecha_alta_licencia, fecha_vencimiento_licencia FROM conductores WHERE id = ?',
+        [conductorId]
+      )
+      if (filas.length === 0) {
+        throw new Error('El conductor indicado no existe')
+      }
+
+      const diaSalida = String(req.body.fechaSalida).slice(0, 10)
+      const { fecha_alta_licencia, fecha_vencimiento_licencia } = filas[0]
+      if (
+        diaSalida < fecha_alta_licencia ||
+        diaSalida > fecha_vencimiento_licencia
+      ) {
+        throw new Error(
+          'La licencia del conductor no está vigente en la fecha de salida'
+        )
+      }
+    })
+]
+
+export const validarFiltrosViajes = [
+  query('vehiculoId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('El filtro vehiculoId debe ser un número entero positivo')
+    .toInt(),
+
+  query('conductorId')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('El filtro conductorId debe ser un número entero positivo')
+    .toInt()
 ]
