@@ -6,6 +6,7 @@ import {
   validarVehiculo,
   verificarValidaciones
 } from './validaciones.js'
+import { obtenerHistorial } from './viajes.js'
 
 const router = express.Router()
 
@@ -47,6 +48,30 @@ router.get(
     }
 
     res.json(aVehiculo(vehiculos[0]))
+  }
+)
+
+// GET para el historial de viajes del vehiculo y su total de kilometros
+router.get(
+  '/:id/viajes',
+  validarAutenticacion,
+  validarId,
+  verificarValidaciones,
+  async (req, res) => {
+    const id = Number(req.params.id)
+
+    const [vehiculos] = await db.execute(
+      'SELECT id, marca, modelo, patente, anio, capacidad_carga FROM vehiculos WHERE id = ?',
+      [id]
+    )
+
+    if (vehiculos.length === 0) {
+      return res.status(404).json({ mensaje: 'Vehículo no encontrado' })
+    }
+
+    const historial = await obtenerHistorial('vehiculo_id', id)
+
+    res.json({ vehiculo: aVehiculo(vehiculos[0]), ...historial })
   }
 )
 

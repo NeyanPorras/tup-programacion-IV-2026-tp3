@@ -46,6 +46,25 @@ const buscarViaje = async (id) => {
   return viajes[0]
 }
 
+// Historial de viajes y total de kilometros de un vehiculo o de un conductor.
+// "columna" la elige el codigo (nunca el cliente): vehiculo_id o conductor_id.
+export async function obtenerHistorial(columna, id) {
+  const [viajes] = await db.execute(
+    `${SELECCION} WHERE v.${columna} = ? ORDER BY v.fecha_salida DESC`,
+    [id]
+  )
+
+  const [totales] = await db.execute(
+    `SELECT COALESCE(SUM(kilometros), 0) AS total FROM viajes WHERE ${columna} = ?`,
+    [id]
+  )
+
+  return {
+    viajes: viajes.map(aViaje),
+    totalKilometros: Number(totales[0].total)
+  }
+}
+
 // GET para listar los viajes, con filtros opcionales por vehiculo y conductor
 router.get(
   '/',

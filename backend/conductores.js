@@ -6,6 +6,7 @@ import {
   validarId,
   verificarValidaciones
 } from './validaciones.js'
+import { obtenerHistorial } from './viajes.js'
 
 const router = express.Router()
 
@@ -57,6 +58,30 @@ router.get(
     }
 
     res.json(aConductor(conductores[0]))
+  }
+)
+
+// GET para el historial de viajes del conductor y su total de kilometros
+router.get(
+  '/:id/viajes',
+  validarAutenticacion,
+  validarId,
+  verificarValidaciones,
+  async (req, res) => {
+    const id = Number(req.params.id)
+
+    const [conductores] = await db.execute(
+      `SELECT ${COLUMNAS} FROM conductores WHERE id = ?`,
+      [id]
+    )
+
+    if (conductores.length === 0) {
+      return res.status(404).json({ mensaje: 'Conductor no encontrado' })
+    }
+
+    const historial = await obtenerHistorial('conductor_id', id)
+
+    res.json({ conductor: aConductor(conductores[0]), ...historial })
   }
 )
 

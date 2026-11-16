@@ -61,6 +61,35 @@ Authorization: Bearer {{login.response.body.token}}
 ### Listar los viajes sin token (401)
 GET {{url}}/viajes
 
+### Historial de un vehiculo: viajes 1 y 3, total 860 km (200)
+# ----------------------------- HISTORIAL -----------------------------
+# Totales esperados con los datos de prueba, antes de registrar viajes.
+GET {{url}}/vehiculos/1/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial de un conductor: viajes 1 y 4, total 910 km (200)
+GET {{url}}/conductores/1/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial de un conductor sin viajes: total 0 km (200)
+GET {{url}}/conductores/3/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial de un vehiculo inexistente (404)
+GET {{url}}/vehiculos/999/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial de un conductor inexistente (404)
+GET {{url}}/conductores/999/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial con id no numerico (400)
+GET {{url}}/vehiculos/abc/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Historial sin token (401)
+GET {{url}}/vehiculos/1/viajes
+
 ### Registrar un viaje con el formato de un input datetime-local (201)
 # ------------------------------ REGISTRO ------------------------------
 POST {{url}}/viajes
