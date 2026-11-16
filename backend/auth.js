@@ -1,6 +1,7 @@
 import express from 'express'
 import { body } from 'express-validator'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import { db } from './db.js'
 import { verificarValidaciones } from './validaciones.js'
 
@@ -87,5 +88,52 @@ router.post(
     }
   }
 )
+
+const reglasDeLogin = [
+  body('email')
+    .exists()
+    .withMessage('El email es obligatorio')
+    .bail()
+    .isString()
+    .withMessage('El email debe ser texto')
+    .bail()
+    .trim()
+    .toLowerCase()
+    .isEmail()
+    .withMessage('El email no es válido'),
+
+  body('password')
+    .exists()
+    .withMessage('La contraseña es obligatoria')
+    .bail()
+    .isString()
+    .withMessage('La contraseña debe ser texto')
+    .bail()
+    .notEmpty()
+    .withMessage('La contraseña es obligatoria')
+]
+
+router.post('/login', reglasDeLogin, verificarValidaciones, async (req, res) => {
+  const { email, password } = req.body
+
+  const [usuarios] = await db.execute(
+    'SELECT id, nombre, password FROM usuarios WHERE email = ?',
+    [email]
+  )
+  const usuario = usuarios[0]
+
+  const passwordValida = usuario
+    ? await bcrypt.compare(password, usuario.password)
+    : false
+
+  if (!passwordValida) {
+    return res.status(401).json({ mensaje: 'Email o contraseña incorrectos' })
+  }
+
+  const payload = { userId: usuario.id, nombre: usuario.nombre }
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '4h' })
+
+  res.json({ token, nombre: usuario.nombre })
+})
 
 export default router

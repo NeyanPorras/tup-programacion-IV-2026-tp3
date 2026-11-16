@@ -140,3 +140,63 @@ Content-Type: application/json
   "email": "luis.perez@mail.com",
   "password": "otraClave99"
 }
+
+# ------------------------------- LOGIN -------------------------------
+
+### Iniciar sesion con datos correctos (200)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Iniciar sesion con el email en mayusculas y con espacios (200)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "  ANA.GARCIA@MAIL.COM ",
+  "password": "segura123"
+}
+
+### Iniciar sesion con la contraseña incorrecta (401)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com",
+  "password": "otraCosa123"
+}
+
+### Iniciar sesion con un email que no esta registrado (401)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nadie@mail.com",
+  "password": "segura123"
+}
+
+### Iniciar sesion sin contraseña (400)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com"
+}
+
+### Iniciar sesion con un email sin formato valido (400)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia",
+  "password": "segura123"
+}
+
+### Iniciar sesion sin body (400)
+POST {{url}}/auth/login
+Content-Type: application/json
