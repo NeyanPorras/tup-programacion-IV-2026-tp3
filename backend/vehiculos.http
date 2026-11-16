@@ -1,0 +1,42 @@
+@url = http://localhost:3000
+
+# Antes de usar este archivo:
+#   1. Cargar los datos de prueba: mysql -u root -p < datos.sql
+#   2. Tener un usuario registrado (ver auth.http)
+#   3. Ejecutar el request "login" de abajo: el resto usa su token
+
+### Iniciar sesion para obtener el token (200)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Listar los vehiculos (200)
+GET {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un vehiculo por id (200)
+GET {{url}}/vehiculos/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un vehiculo inexistente (404)
+GET {{url}}/vehiculos/999
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un vehiculo con id no numerico (400)
+GET {{url}}/vehiculos/1abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un vehiculo con id cero (400)
+GET {{url}}/vehiculos/0
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar los vehiculos sin token (401)
+GET {{url}}/vehiculos
+
+### Obtener un vehiculo sin token (401)
+GET {{url}}/vehiculos/1
