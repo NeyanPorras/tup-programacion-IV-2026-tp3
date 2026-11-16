@@ -74,3 +74,70 @@ export const validarVehiculo = [
     .toFloat()
 ]
 
+
+const FORMATO_FECHA = /^\d{4}-\d{2}-\d{2}$/
+
+// Valida una fecha YYYY-MM-DD que exista en el calendario (rechaza 2026-02-30)
+const reglaFecha = (campo, nombre) =>
+  body(campo)
+    .isString()
+    .withMessage(`La ${nombre} es obligatoria`)
+    .bail()
+    .matches(FORMATO_FECHA)
+    .withMessage(`La ${nombre} debe tener el formato AAAA-MM-DD`)
+    .bail()
+    .isISO8601({ strict: true })
+    .withMessage(`La ${nombre} no es una fecha válida`)
+
+export const validarConductor = [
+  body('nombre')
+    .isString()
+    .withMessage('El nombre es obligatorio')
+    .bail()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('El nombre debe tener entre 2 y 50 caracteres')
+    .bail()
+    .isAlpha('es-ES', { ignore: " '-" })
+    .withMessage('El nombre solo puede contener letras'),
+
+  body('apellido')
+    .isString()
+    .withMessage('El apellido es obligatorio')
+    .bail()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('El apellido debe tener entre 2 y 50 caracteres')
+    .bail()
+    .isAlpha('es-ES', { ignore: " '-" })
+    .withMessage('El apellido solo puede contener letras'),
+
+  body('documento')
+    .exists()
+    .withMessage('El documento es obligatorio')
+    .bail()
+    .trim()
+    .matches(/^\d{7,8}$/)
+    .withMessage('El documento debe tener 7 u 8 dígitos, sin puntos'),
+
+  body('licencia')
+    .isString()
+    .withMessage('La licencia es obligatoria')
+    .bail()
+    .trim()
+    .toUpperCase()
+    .isLength({ min: 5, max: 20 })
+    .withMessage('La licencia debe tener entre 5 y 20 caracteres')
+    .bail()
+    .matches(/^[A-Z0-9-]+$/)
+    .withMessage('La licencia solo puede contener letras, números y guiones'),
+
+  reglaFecha('fechaAltaLicencia', 'fecha de alta de la licencia'),
+
+  reglaFecha('fechaVencimientoLicencia', 'fecha de vencimiento de la licencia')
+    .bail()
+    .custom((vencimiento, { req }) => vencimiento > req.body.fechaAltaLicencia)
+    .withMessage(
+      'La fecha de vencimiento debe ser posterior a la fecha de alta de la licencia'
+    )
+]
