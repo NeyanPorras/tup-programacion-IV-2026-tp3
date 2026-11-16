@@ -9,6 +9,7 @@ import { Home } from './Home'
 import { NoEncontrado } from './NoEncontrado'
 import { Login } from './Login'
 import { Registro } from './Registro'
+import { Vehiculos } from './Vehiculos'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -22,7 +23,7 @@ createRoot(document.getElementById('root')).render(
 
             {/* Rutas protegidas: solo con sesion iniciada */}
             <Route element={<AuthLayout />}>
-              <Route path="vehiculos" element={<p>Vehículos (próximamente)</p>} />
+              <Route path="vehiculos" element={<Vehiculos />} />
             </Route>
 
             <Route path="*" element={<NoEncontrado />} />
