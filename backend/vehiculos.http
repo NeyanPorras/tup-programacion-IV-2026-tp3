@@ -40,3 +40,250 @@ GET {{url}}/vehiculos
 
 ### Obtener un vehiculo sin token (401)
 GET {{url}}/vehiculos/1
+
+### Crear un vehiculo con patente Mercosur, se guarda en mayusculas (201)
+# ------------------------------- ALTA -------------------------------
+# Con los datos de prueba cargados, este vehiculo queda con id 4.
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master",
+  "patente": "ad789gh",
+  "anio": 2024,
+  "capacidadCarga": 1600
+}
+
+### Crear un vehiculo con patente de formato viejo (201)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Volkswagen",
+  "modelo": "Delivery 9.170",
+  "patente": "JKL987",
+  "anio": 2010,
+  "capacidadCarga": 6500.5
+}
+
+### Crear con una patente que ya existe (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AB123CD",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Crear con una patente repetida escrita en minusculas (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "ab123cd",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Crear con una patente de formato invalido (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "1234ABC",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Crear sin marca (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Crear con la marca vacia (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "   ",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Crear con un año anterior a 1950 (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 1949,
+  "capacidadCarga": 800
+}
+
+### Crear con un año con decimales (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2020.5,
+  "capacidadCarga": 800
+}
+
+### Crear con capacidad de carga cero (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2022,
+  "capacidadCarga": 0
+}
+
+### Crear con capacidad de carga negativa (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2022,
+  "capacidadCarga": -500
+}
+
+### Crear sin body (400)
+POST {{url}}/vehiculos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+### Crear sin token (401)
+POST {{url}}/vehiculos
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Kangoo",
+  "patente": "AE111AA",
+  "anio": 2022,
+  "capacidadCarga": 800
+}
+
+### Modificar un vehiculo (200)
+# --------------------------- MODIFICACION ---------------------------
+PUT {{url}}/vehiculos/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master L2H2",
+  "patente": "AD789GH",
+  "anio": 2024,
+  "capacidadCarga": 1750
+}
+
+### Modificar usando la patente de otro vehiculo (400)
+PUT {{url}}/vehiculos/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master L2H2",
+  "patente": "AB123CD",
+  "anio": 2024,
+  "capacidadCarga": 1750
+}
+
+### Modificar con datos invalidos (400)
+PUT {{url}}/vehiculos/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master L2H2",
+  "patente": "AD789GH",
+  "anio": 2024,
+  "capacidadCarga": "mucha"
+}
+
+### Modificar un vehiculo inexistente (404)
+PUT {{url}}/vehiculos/999
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master",
+  "patente": "AF222BB",
+  "anio": 2024,
+  "capacidadCarga": 1600
+}
+
+### Modificar con id no numerico (400)
+PUT {{url}}/vehiculos/1abc
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "marca": "Renault",
+  "modelo": "Master",
+  "patente": "AF222BB",
+  "anio": 2024,
+  "capacidadCarga": 1600
+}
+
+### Eliminar un vehiculo que tiene viajes (400)
+# ------------------------------- BAJA -------------------------------
+DELETE {{url}}/vehiculos/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar un vehiculo sin viajes (200)
+DELETE {{url}}/vehiculos/4
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar el mismo vehiculo otra vez (404)
+DELETE {{url}}/vehiculos/4
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar con id no numerico (400)
+DELETE {{url}}/vehiculos/1abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar sin token (401)
+DELETE {{url}}/vehiculos/2
