@@ -1,0 +1,263 @@
+@url = http://localhost:3000
+
+# Antes de usar este archivo:
+#   1. Cargar los datos de prueba: mysql -u root -p < datos.sql
+#   2. Tener un usuario registrado (ver auth.http)
+#   3. Ejecutar el request "login" de abajo: el resto usa su token
+# Con los datos de prueba hay 4 viajes. El conductor 3 (Carlos Núñez)
+# tiene la licencia vencida desde el 2025-01-15.
+
+### Iniciar sesion para obtener el token (200)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Listar todos los viajes (200)
+# ----------------------------- CONSULTA -----------------------------
+GET {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar los viajes de un vehiculo (200)
+GET {{url}}/viajes?vehiculoId=1
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar los viajes de un conductor (200)
+GET {{url}}/viajes?conductorId=2
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar combinando los dos filtros (200)
+GET {{url}}/viajes?vehiculoId=1&conductorId=2
+Authorization: Bearer {{login.response.body.token}}
+
+### Filtrar por un vehiculo sin viajes, devuelve una lista vacia (200)
+GET {{url}}/viajes?vehiculoId=999
+Authorization: Bearer {{login.response.body.token}}
+
+### Filtrar con un vehiculoId no numerico (400)
+GET {{url}}/viajes?vehiculoId=abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Filtrar con un conductorId cero (400)
+GET {{url}}/viajes?conductorId=0
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un viaje por id (200)
+GET {{url}}/viajes/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un viaje inexistente (404)
+GET {{url}}/viajes/999
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un viaje con id no numerico (400)
+GET {{url}}/viajes/abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar los viajes sin token (401)
+GET {{url}}/viajes
+
+### Registrar un viaje con el formato de un input datetime-local (201)
+# ------------------------------ REGISTRO ------------------------------
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10T07:00",
+  "fechaLlegada": "2026-11-10T13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5,
+  "observaciones": "Entrega de repuestos"
+}
+
+### Registrar un viaje sin observaciones (201)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 3,
+  "conductorId": 2,
+  "fechaSalida": "2026-11-12 05:00:00",
+  "fechaLlegada": "2026-11-12 16:00:00",
+  "origen": "Córdoba",
+  "destino": "Mendoza",
+  "kilometros": 690
+}
+
+### Registrar con un vehiculo que no existe (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 999,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con un conductor que no existe (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 999,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con un conductor de licencia vencida (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 3,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar en una fecha en que la licencia todavia no existia (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2019-05-10 07:00",
+  "fechaLlegada": "2019-05-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con la llegada anterior a la salida (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 13:30",
+  "fechaLlegada": "2026-11-10 07:00",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con una fecha en otro formato (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "10/11/2026 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con una hora imposible (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 25:00",
+  "fechaLlegada": "2026-11-11 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con kilometros en cero (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 0
+}
+
+### Registrar sin origen (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
+
+### Registrar con observaciones de mas de 255 caracteres (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5,
+  "observaciones": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}
+
+### Registrar sin body (400)
+POST {{url}}/viajes
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+### Registrar sin token (401)
+POST {{url}}/viajes
+Content-Type: application/json
+
+{
+  "vehiculoId": 2,
+  "conductorId": 1,
+  "fechaSalida": "2026-11-10 07:00",
+  "fechaLlegada": "2026-11-10 13:30",
+  "origen": "La Rioja",
+  "destino": "Tucumán",
+  "kilometros": 392.5
+}
