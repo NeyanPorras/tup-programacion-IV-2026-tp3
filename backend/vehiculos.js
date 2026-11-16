@@ -3,6 +3,7 @@ import { db } from './db.js'
 import {
   validarAutenticacion,
   validarId,
+  validarVehiculo,
   verificarValidaciones
 } from './validaciones.js'
 
@@ -46,6 +47,104 @@ router.get(
     }
 
     res.json(aVehiculo(vehiculos[0]))
+  }
+)
+
+// POST para crear un vehiculo
+router.post(
+  '/',
+  validarAutenticacion,
+  validarVehiculo,
+  verificarValidaciones,
+  async (req, res) => {
+    const { marca, modelo, patente, anio, capacidadCarga } = req.body
+
+    try {
+      const [resultado] = await db.execute(
+        'INSERT INTO vehiculos (marca, modelo, patente, anio, capacidad_carga) VALUES (?, ?, ?, ?, ?)',
+        [marca, modelo, patente, anio, capacidadCarga]
+      )
+
+      res.status(201).json({
+        id: resultado.insertId,
+        marca,
+        modelo,
+        patente,
+        anio,
+        capacidadCarga
+      })
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res
+          .status(400)
+          .json({ mensaje: 'Ya existe un vehículo con esa patente' })
+      }
+      throw error
+    }
+  }
+)
+
+// PUT para modificar un vehiculo (reemplaza todos sus datos)
+router.put(
+  '/:id',
+  validarAutenticacion,
+  validarId,
+  validarVehiculo,
+  verificarValidaciones,
+  async (req, res) => {
+    const id = Number(req.params.id)
+    const { marca, modelo, patente, anio, capacidadCarga } = req.body
+
+    try {
+      const [resultado] = await db.execute(
+        'UPDATE vehiculos SET marca = ?, modelo = ?, patente = ?, anio = ?, capacidad_carga = ? WHERE id = ?',
+        [marca, modelo, patente, anio, capacidadCarga, id]
+      )
+
+      if (resultado.affectedRows === 0) {
+        return res.status(404).json({ mensaje: 'Vehículo no encontrado' })
+      }
+
+      res.json({ id, marca, modelo, patente, anio, capacidadCarga })
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        return res
+          .status(400)
+          .json({ mensaje: 'Ya existe un vehículo con esa patente' })
+      }
+      throw error
+    }
+  }
+)
+
+// DELETE para eliminar un vehiculo
+router.delete(
+  '/:id',
+  validarAutenticacion,
+  validarId,
+  verificarValidaciones,
+  async (req, res) => {
+    const id = Number(req.params.id)
+
+    try {
+      const [resultado] = await db.execute(
+        'DELETE FROM vehiculos WHERE id = ?',
+        [id]
+      )
+
+      if (resultado.affectedRows === 0) {
+        return res.status(404).json({ mensaje: 'Vehículo no encontrado' })
+      }
+
+      res.json({ mensaje: 'Vehículo eliminado' })
+    } catch (error) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        return res.status(400).json({
+          mensaje: 'No se puede eliminar el vehículo porque tiene viajes registrados'
+        })
+      }
+      throw error
+    }
   }
 )
 
