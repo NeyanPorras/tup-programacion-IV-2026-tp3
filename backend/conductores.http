@@ -1,0 +1,329 @@
+@url = http://localhost:3000
+
+# Antes de usar este archivo:
+#   1. Cargar los datos de prueba: mysql -u root -p < datos.sql
+#   2. Tener un usuario registrado (ver auth.http)
+#   3. Ejecutar el request "login" de abajo: el resto usa su token
+# Con los datos de prueba, los conductores 1 y 2 tienen viajes y el 3 no.
+
+### Iniciar sesion para obtener el token (200)
+# @name login
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.garcia@mail.com",
+  "password": "segura123"
+}
+
+### Listar los conductores (200)
+# ----------------------------- CONSULTA -----------------------------
+GET {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un conductor por id (200)
+GET {{url}}/conductores/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un conductor inexistente (404)
+GET {{url}}/conductores/999
+Authorization: Bearer {{login.response.body.token}}
+
+### Obtener un conductor con id no numerico (400)
+GET {{url}}/conductores/abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Listar los conductores sin token (401)
+GET {{url}}/conductores
+
+### Crear un conductor (201)
+# ------------------------------- ALTA -------------------------------
+# Con los datos de prueba cargados, este conductor queda con id 4.
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Lucía",
+  "apellido": "Fernández",
+  "documento": "35987654",
+  "licencia": "lic-35987654",
+  "fechaAltaLicencia": "2022-05-20",
+  "fechaVencimientoLicencia": "2027-05-20"
+}
+
+### Crear con apellido compuesto y documento de 7 digitos (201)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Martín",
+  "apellido": "D'Angelo Ruiz-Díaz",
+  "documento": "9876543",
+  "licencia": "B2-9876543",
+  "fechaAltaLicencia": "2018-02-01",
+  "fechaVencimientoLicencia": "2028-02-01"
+}
+
+### Crear con un documento que ya existe (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "30123456",
+  "licencia": "LIC-NUEVA-01",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con una licencia que ya existe, escrita en minusculas (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "lic-30123456",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con un nombre que contiene numeros (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedr0",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear sin apellido (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con un documento con puntos (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40.111.222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con un documento de 6 digitos (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "401112",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con una licencia con simbolos no permitidos (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC#4011",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con una fecha en otro formato (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "01/01/2022",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con una fecha que no existe en el calendario (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-02-30",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Crear con el vencimiento anterior al alta (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2027-01-01",
+  "fechaVencimientoLicencia": "2022-01-01"
+}
+
+### Crear con el vencimiento igual al alta (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2022-01-01"
+}
+
+### Crear sin body (400)
+POST {{url}}/conductores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+### Crear sin token (401)
+POST {{url}}/conductores
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Renovar la licencia de un conductor (200)
+# --------------------------- MODIFICACION ---------------------------
+PUT {{url}}/conductores/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Lucía",
+  "apellido": "Fernández",
+  "documento": "35987654",
+  "licencia": "LIC-35987654",
+  "fechaAltaLicencia": "2022-05-20",
+  "fechaVencimientoLicencia": "2032-05-20"
+}
+
+### Modificar usando el documento de otro conductor (400)
+PUT {{url}}/conductores/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Lucía",
+  "apellido": "Fernández",
+  "documento": "32654987",
+  "licencia": "LIC-35987654",
+  "fechaAltaLicencia": "2022-05-20",
+  "fechaVencimientoLicencia": "2032-05-20"
+}
+
+### Modificar con el vencimiento anterior al alta (400)
+PUT {{url}}/conductores/4
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Lucía",
+  "apellido": "Fernández",
+  "documento": "35987654",
+  "licencia": "LIC-35987654",
+  "fechaAltaLicencia": "2022-05-20",
+  "fechaVencimientoLicencia": "2020-05-20"
+}
+
+### Modificar un conductor inexistente (404)
+PUT {{url}}/conductores/999
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Modificar con id no numerico (400)
+PUT {{url}}/conductores/abc
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Pedro",
+  "apellido": "Gómez",
+  "documento": "40111222",
+  "licencia": "LIC-40111222",
+  "fechaAltaLicencia": "2022-01-01",
+  "fechaVencimientoLicencia": "2027-01-01"
+}
+
+### Eliminar un conductor que tiene viajes (400)
+# ------------------------------- BAJA -------------------------------
+DELETE {{url}}/conductores/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar un conductor sin viajes (200)
+DELETE {{url}}/conductores/4
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar el mismo conductor otra vez (404)
+DELETE {{url}}/conductores/4
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar con id no numerico (400)
+DELETE {{url}}/conductores/abc
+Authorization: Bearer {{login.response.body.token}}
+
+### Eliminar sin token (401)
+DELETE {{url}}/conductores/3
