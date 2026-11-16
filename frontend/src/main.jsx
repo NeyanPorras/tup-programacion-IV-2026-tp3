@@ -13,6 +13,7 @@ import { Vehiculos } from './Vehiculos'
 import { VehiculoForm } from './VehiculoForm'
 import { Conductores } from './Conductores'
 import { ConductorForm } from './ConductorForm'
+import { ViajeCrear } from './ViajeCrear'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -32,6 +33,7 @@ createRoot(document.getElementById('root')).render(
               <Route path="conductores" element={<Conductores />} />
               <Route path="conductores/nuevo" element={<ConductorForm />} />
               <Route path="conductores/:id/editar" element={<ConductorForm />} />
+              <Route path="viajes/nuevo" element={<ViajeCrear />} />
             </Route>
 
             <Route path="*" element={<NoEncontrado />} />
