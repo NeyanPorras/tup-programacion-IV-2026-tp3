@@ -28,6 +28,45 @@ export function validarNombrePersona(nombre, campo = 'El nombre') {
   return null
 }
 
+// femenino: true para campos como 'La marca' (es obligatoria)
+export function validarTexto(valor, campo, maximo, femenino = false) {
+  const limpio = valor.trim()
+  if (!limpio) return `${campo} es ${femenino ? 'obligatoria' : 'obligatorio'}`
+  if (limpio.length > maximo) return `${campo} no puede superar los ${maximo} caracteres`
+  return null
+}
+
+// Patente argentina: formato viejo AAA123 o formato Mercosur AA123AA
+export function validarPatente(patente) {
+  const limpia = patente.trim().toUpperCase()
+  if (!limpia) return 'La patente es obligatoria'
+  if (!/^([A-Z]{3}\d{3}|[A-Z]{2}\d{3}[A-Z]{2})$/.test(limpia)) {
+    return 'La patente debe tener el formato AAA123 o AA123AA'
+  }
+  return null
+}
+
+export const ANIO_MAXIMO = new Date().getFullYear() + 1
+
+export function validarAnio(anio) {
+  if (anio === '') return 'El año es obligatorio'
+  const numero = Number(anio)
+  if (!Number.isInteger(numero) || numero < 1950 || numero > ANIO_MAXIMO) {
+    return `El año debe ser un número entero entre 1950 y ${ANIO_MAXIMO}`
+  }
+  return null
+}
+
+export function validarNumeroPositivo(valor, campo, femenino = false, maximo = 999999.99) {
+  if (valor === '') return `${campo} es ${femenino ? 'obligatoria' : 'obligatorio'}`
+  const numero = Number(valor)
+  if (!Number.isFinite(numero) || numero <= 0) {
+    return `${campo} debe ser un número mayor que 0`
+  }
+  if (numero > maximo) return `${campo} no puede superar ${maximo}`
+  return null
+}
+
 // Devuelve solo los campos con error: { email: '...', password: '...' }
 export function soloErrores(errores) {
   return Object.fromEntries(
