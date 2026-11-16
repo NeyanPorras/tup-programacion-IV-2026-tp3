@@ -18,14 +18,51 @@ export function validarPasswordNueva(password) {
   return null
 }
 
-export function validarNombrePersona(nombre, campo = 'El nombre') {
+// conSignos: acepta apostrofos y guiones (apellidos como D'Angelo o Ruiz-Diaz)
+export function validarNombrePersona(nombre, campo = 'El nombre', conSignos = false) {
   const limpio = nombre.trim()
   if (!limpio) return `${campo} es obligatorio`
   if (limpio.length < 2 || limpio.length > 50) {
     return `${campo} debe tener entre 2 y 50 caracteres`
   }
-  if (!/^[\p{L} ]+$/u.test(limpio)) return `${campo} solo puede contener letras`
+  const formato = conSignos ? /^[\p{L} '-]+$/u : /^[\p{L} ]+$/u
+  if (!formato.test(limpio)) return `${campo} solo puede contener letras`
   return null
+}
+
+export function validarDocumento(documento) {
+  const limpio = documento.trim()
+  if (!limpio) return 'El documento es obligatorio'
+  if (!/^\d{7,8}$/.test(limpio)) return 'El documento debe tener 7 u 8 dígitos, sin puntos'
+  return null
+}
+
+export function validarLicencia(licencia) {
+  const limpia = licencia.trim().toUpperCase()
+  if (!limpia) return 'La licencia es obligatoria'
+  if (limpia.length < 5 || limpia.length > 20) {
+    return 'La licencia debe tener entre 5 y 20 caracteres'
+  }
+  if (!/^[A-Z0-9-]+$/.test(limpia)) {
+    return 'La licencia solo puede contener letras, números y guiones'
+  }
+  return null
+}
+
+// El input type="date" entrega "AAAA-MM-DD", o "" si esta vacio
+export function validarFecha(fecha, campo) {
+  if (!fecha) return `${campo} es obligatoria`
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return `${campo} no es válida`
+  return null
+}
+
+// Fecha de hoy como "AAAA-MM-DD" en hora local (toISOString usa UTC y
+// despues de las 21 hs en Argentina devolveria el dia siguiente)
+export function hoy() {
+  const ahora = new Date()
+  const mes = String(ahora.getMonth() + 1).padStart(2, '0')
+  const dia = String(ahora.getDate()).padStart(2, '0')
+  return `${ahora.getFullYear()}-${mes}-${dia}`
 }
 
 // femenino: true para campos como 'La marca' (es obligatoria)
